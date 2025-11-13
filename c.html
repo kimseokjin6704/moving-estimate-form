@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>이사 견적 요청서</title>
+  <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+  <style>
+    body {
+      font-family: 'Pretendard', sans-serif;
+      max-width: 600px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #f7f8fa;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #333;
+    }
+    form {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 15px;
+    }
+    input, textarea, select, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 15px;
+    }
+    button {
+      background: #0078ff;
+      color: white;
+      font-weight: bold;
+      margin-top: 20px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover {
+      background: #005fcc;
+    }
+  </style>
+</head>
+<body>
+  <h1>이사 견적 요청서</h1>
+  <form id="estimateForm">
+    <label>이름</label>
+    <input type="text" name="name" required />
+
+    <label>연락처</label>
+    <input type="tel" name="phone" required placeholder="010-1234-5678" />
+
+    <label>출발지 주소</label>
+    <div style="display: flex; gap: 8px;">
+      <input type="text" id="fromAddress" name="fromAddress" readonly required />
+      <button type="button" onclick="searchAddress('fromAddress')">주소검색</button>
+    </div>
+
+    <label>도착지 주소</label>
+    <div style="display: flex; gap: 8px;">
+      <input type="text" id="toAddress" name="toAddress" readonly required />
+      <button type="button" onclick="searchAddress('toAddress')">주소검색</button>
+    </div>
+
+    <label>이사 날짜</label>
+    <input type="date" name="moveDate" required />
+
+    <label>짐 종류 / 크기</label>
+    <select name="truckSize" required>
+      <option value="">선택해주세요</option>
+      <option value="1톤 트럭">1톤 트럭</option>
+      <option value="2.5톤 트럭">2.5톤 트럭</option>
+      <option value="5톤 이상">5톤 이상</option>
+    </select>
+
+    <label>추가 요청사항</label>
+    <textarea name="memo" rows="4" placeholder="예: 피아노 운반, 포장 이사 등"></textarea>
+
+    <button type="submit">견적 요청하기</button>
+  </form>
+
+  <script>
+    function searchAddress(targetId) {
+      new daum.Postcode({
+        oncomplete: function(data) {
+          document.getElementById(targetId).value = data.address;
+        }
+      }).open();
+    }
+
+    document.getElementById("estimateForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const formData = Object.fromEntries(new FormData(e.target).entries());
+      const response = await fetch("http://localhost:5000/send-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      const result = await response.json();
+      alert(result.message);
+    });
+  </script>
+</body>
+</html>
